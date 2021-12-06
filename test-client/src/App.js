@@ -29,7 +29,7 @@ const App = () => {
     return (
         <div>
             <Routes>
-                <Route exact path='/' element={<LoginPage/>}/>
+                <Route exact path='/*' element={<LoginPage/>}/>
                 <Route  path='/catalog' element={<Catalog/>}/>
                 <Route  path='/productType' element={<ProductType/>}/>
                 <Route  path='/measurement' element={<Measurement/>}/>

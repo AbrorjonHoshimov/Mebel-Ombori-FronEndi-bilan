@@ -8,7 +8,13 @@ const LoginPage = () => {
     const [getLogin,setLogin]=useState({})
         const history = useNavigate()
 
-        axios.post(API_PATH+'auth/login',getLogin).
+
+
+    function login(event,values){
+        axios.post(API_PATH+'auth/login',{
+            username:values.username,
+            password:values.password
+        }).
         then((res)=>{
             console.log(res.data)
             localStorage.setItem(TOKEN_NAME, "Bearer " + res.data);
@@ -18,15 +24,8 @@ const LoginPage = () => {
             toast.error("Xatolik!");
 
         })
-
-    function login(event,values){
-        setLogin({
-            username:values.username,
-            password:values.password
-        })
     }
 
-    console.log(getLogin)
     return (
         <div>
             <div className="container mt-5">

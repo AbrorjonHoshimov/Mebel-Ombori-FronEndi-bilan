@@ -6,7 +6,7 @@ import {Table} from "reactstrap";
 
 const ClientInformation = () => {
     const param = useParams()
-    const [client, setClient] = useState()
+    const [client, setClient] = useState([])
     function getClient() {
         axios.get(API_PATH + 'client/getOneClientFromOutputProduct/' + param.id, tokenHeader).then(res => {
             setClient(res.data)

@@ -6,7 +6,7 @@ import {Table} from "reactstrap";
 
 const SuplierInformation = () => {
     let params=useParams();
-   const [suplier,setSuplier]=useState()
+   const [suplier,setSuplier]=useState([])
     console.log(params)
 
     function getInformationSuplier(){
