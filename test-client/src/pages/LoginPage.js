@@ -4,25 +4,23 @@ import axios from "axios";
 import {API_PATH, TOKEN_NAME} from "../component/Constants";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
+
 const LoginPage = () => {
-    const [getLogin,setLogin]=useState({})
-        const history = useNavigate()
+    const history = useNavigate()
 
 
-
-    function login(event,values){
-        axios.post(API_PATH+'auth/login',{
-            username:values.username,
-            password:values.password
-        }).
-        then((res)=>{
+    function login(event, values) {
+        console.log(values)
+        axios.post(API_PATH + 'auth/login', {
+            username: values.username,
+            password: values.password
+        }).then((res) => {
             console.log(res.data)
             localStorage.setItem(TOKEN_NAME, "Bearer " + res.data);
             history("/catalog")
         }).catch((error) => {
             console.log(error);
             toast.error("Xatolik!");
-
         })
     }
 
@@ -33,7 +31,7 @@ const LoginPage = () => {
                     <div className="col-4">
                         <div className="card">
                             <div className="card-body">
-                                <AvForm onValidSubmit={login} >
+                                <AvForm onValidSubmit={login}>
                                     <AvField
                                         name="username"
                                         placeholder="Username"
@@ -44,7 +42,7 @@ const LoginPage = () => {
                                         placeholder="Password"
                                         type="password"
                                         required/>
-                                    <button  type='submit'
+                                    <button type='submit'
                                             className='btn btn-success btn-block'>
                                         Login
                                     </button>

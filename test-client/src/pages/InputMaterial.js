@@ -1,90 +1,65 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
-import {API_PATH, tokenHeader} from "../component/Constants";
-import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {
+    addInputMaterial,
+    deleteInputMaterial,
+    editInputMaterial, forDeleteModal,
+    getInputMaterial,
+    modalToggle
+} from "../store/inputMaterial";
+import {getSuplier} from "../store/suplier";
+import {getMaterial} from "../store/material";
 
-const InputMaterial = () => {
-    const [material, setMaterial] = useState([])
-    const [supplier, setSupplier] = useState([])
-    const [inputMaterial, setInputMaterial] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
+const InputMaterial = ({inMaterial, showModal, deleteModal, suplier, material, getInputMaterial,
+                           getSuplier, modalToggle, forDeleteModal, deleteInputMaterial, editInputMaterial, getMaterial, addInputMaterial
+                       }) => {
+
     const [currentClient, setcurrentClient] = useState(undefined)
 
-    const getSupplier = () => {
-        axios.get(API_PATH + 'suplier/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setSupplier(res.data)
-        })
-    }
-    const getMaterial = () => {
-        axios.get(API_PATH + 'material/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setMaterial(res.data)
-        })
-    }
-    const getInputMaterial = () => {
-        axios.get(API_PATH + 'inputMaterial/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setInputMaterial(res.data)
-        })
-    }
     useEffect(() => {
         getMaterial()
-        getSupplier()
+        getSuplier()
         getInputMaterial()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
+
     const saveClient = (event, values) => {
         if (!currentClient) {
-            axios.post(API_PATH + "inputMaterial/add", values, tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getInputMaterial()
-            })
+            addInputMaterial(values)
         } else {
-            axios.put(API_PATH + "inputMaterial/" + currentClient.id, values, tokenHeader).then(res => {
-                getInputMaterial()
-            })
+            editInputMaterial(currentClient.id, values)
             setcurrentClient(undefined)
         }
-        openModal()
+        modalToggle()
     }
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "inputMaterial/" + value.id, tokenHeader).then(res => {
-            getInputMaterial()
-        })
+        deleteInputMaterial(value.id)
         setcurrentClient(undefined)
-        openDeleteModal()
+        forDeleteModal()
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
-    }
 
     function deleteClientRoad(value) {
-        openDeleteModal()
+        forDeleteModal()
         setcurrentClient(value)
     }
 
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+        modalToggle()
     }
 
 
     return (
         <div className={"container"}>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={modalToggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    modalToggle()
                 }}>
                     Omborga Xomashyo qo'shish
                 </ModalHeader>
@@ -104,11 +79,12 @@ const InputMaterial = () => {
                         <AvField type="select" name="supplierId" label="Option"
                                  helpMessage="Idk, this is an example. Deal with it!">
                             <option value="">Taminotchini tanlang</option>
-                            {supplier.map(((value, index) => {
+                            {suplier.map(((value, index) => {
                                 return <option value={value.id}>{value.name}</option>
                             }))}
                         </AvField>
-                        <AvField name="amount" label="Maxsulot miqdori" required value={currentClient ? currentClient.amount : ""}/>
+                        <AvField name="amount" label="Maxsulot miqdori" required
+                                 value={currentClient ? currentClient.amount : ""}/>
                         <AvField name="price" label="Narxi" required
                                  value={currentClient ? currentClient.price : ""}/>
                         <Button color="success">Save</Button>
@@ -117,13 +93,13 @@ const InputMaterial = () => {
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
                     <Button onClick={() => deleteClient(currentClient)}>xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => forDeleteModal()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -161,14 +137,14 @@ const InputMaterial = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {inputMaterial.map((value, index) => {
+                {inMaterial.map((value, index) => {
                     return <tr style={{cursor: 'pointer'}}>
                         <td>{index + 1}</td>
-                        <td>{value.material.code+' '+value.material.nameUZ}</td>
+                        <td>{value.material.code + ' ' + value.material.nameUZ}</td>
                         <td>{value.amount}</td>
                         <td>{value.material.measurement.nameUz}</td>
-                        <td>{value.price+' $'}</td>
-                        <td>{value.price*value.amount+' $'}</td>
+                        <td>{value.price + ' $'}</td>
+                        <td>{value.price * value.amount + ' $'}</td>
                         <td>{value.date}</td>
                         <td>{value.supplier.name}</td>
                         <td>
@@ -184,4 +160,21 @@ const InputMaterial = () => {
     );
 };
 
-export default InputMaterial;
+const mapStateToProps = (state) => ({
+    inMaterial: state.inputMaterial.inputMaterial,
+    deleteModal: state.inputMaterial.deleteModal,
+    showModal: state.inputMaterial.showModal,
+    suplier: state.suplier.suplier,
+    material: state.material.material
+})
+const mapDispatchToProps = {
+    getInputMaterial,
+    getSuplier,
+    getMaterial,
+    deleteInputMaterial,
+    modalToggle,
+    forDeleteModal,
+    addInputMaterial,
+    editInputMaterial
+}
+export default connect(mapStateToProps, mapDispatchToProps)(InputMaterial);

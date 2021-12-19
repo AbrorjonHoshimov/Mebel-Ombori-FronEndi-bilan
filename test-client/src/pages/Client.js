@@ -4,26 +4,18 @@ import {API_PATH, tokenHeader} from "../component/Constants";
 import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {getClient, modalToggle} from "../store/client";
 
-const Client = () => {
-    const [client, setClient] = useState([])
-    const [disable, setDisable] = useState(false)
+const Client = ({client,showModal,getClient,modalToggle}) => {
     const [deleteModal, setdeleteModal] = useState(false)
     const [currentClient, setcurrentClient] = useState(undefined)
 
-    const getClient = () => {
-        axios.get(API_PATH + 'client/list',tokenHeader).then(res => {
-            // console.log(res.data)
-            setClient(res.data)
-        })
-    }
     useEffect(() => {
         getClient()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
+
     const saveClient = (event,values) => {
         if (!currentClient) {
             axios.post(API_PATH + "client/add", values,tokenHeader).then(res => {
@@ -37,7 +29,7 @@ const Client = () => {
             })
             setcurrentClient(undefined)
         }
-        openModal()
+        modalToggle()
     }
 
     function deleteClient(value) {
@@ -58,7 +50,7 @@ const Client = () => {
     }
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+        modalToggle()
     }
 
 
@@ -66,11 +58,11 @@ const Client = () => {
 
     return (
         <div>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={modalToggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    modalToggle()
                 }}>
                     Mijoz Qo'shish
                 </ModalHeader>
@@ -140,5 +132,9 @@ const Client = () => {
         </div>
     );
 };
-
-export default Client;
+const mapStateToProps=(state)=>({
+    client:state.client.client,
+    showModal:state.client.showModal
+})
+const mapDispatchToProps ={getClient,modalToggle}
+export default  connect(mapStateToProps,mapDispatchToProps) (Client);

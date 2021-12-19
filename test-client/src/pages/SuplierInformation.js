@@ -18,7 +18,8 @@ const SuplierInformation = () => {
 
 
     useEffect(()=>{
-getInformationSuplier()
+    getInformationSuplier()
+
     },[])
 
     return (

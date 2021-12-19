@@ -15,18 +15,13 @@ import {useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 
 const Navbar = () => {
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useState(false)
     let navigate = useNavigate();
     return (
         <>
             <img onClick={() => setOpen(!open)} style={{cursor: 'pointer', position: 'absolute', top: '60px',left:"0"}} src={set}
                  alt=""/>
             <div className={open ? "main" : "domain"}>
-                <div className='dashboard' style={{marginTop: '40px'}}><img src={max} alt="" style={{
-                    marginLeft: '10px',
-                    marginRight: '10px'
-                }}/>Dashboard
-                </div>
                 <div className='dashboard'><img src={order} alt="" style={{
                     marginLeft: '10px',
                     marginRight: '10px'

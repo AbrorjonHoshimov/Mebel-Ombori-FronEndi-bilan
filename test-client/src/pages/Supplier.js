@@ -1,92 +1,59 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
-import {API_PATH, tokenHeader} from "../component/Constants";
-import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {addSuplier, deleteSuplier, editSuplier, forDeleteModal, forShowModal, getSuplier} from "../store/suplier";
 
-const Supplier = () => {
-    const [supplier, setSupplier] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
+const Supplier = ({suplier,deleteModal,showModal,getSuplier,addSuplier,editSuplier,deleteSuplier,forShowModal,forDeleteModal}) => {
+
     const [currentClient, setcurrentClient] = useState(undefined)
 
-    const getSupplier = () => {
-        axios.get(API_PATH + 'suplier/list',tokenHeader).then(res => {
-            // console.log(res.data)
-            setSupplier(res.data)
-        })
-    }
     useEffect(() => {
-        getSupplier()
+        getSuplier()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
     const saveClient = (event,values) => {
         if (!currentClient) {
-            axios.post(API_PATH + "suplier/add", values,tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getSupplier()
-
-            })
+          addSuplier(values)
         }else {
-            axios.put(API_PATH+"suplier/edit/"+currentClient.id,values,tokenHeader).then(res=>{
-                getSupplier()
-            })
+           editSuplier(currentClient.id,values)
             setcurrentClient(undefined)
         }
-        openModal()
+        forShowModal()
     }
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "suplier/"+value.id,tokenHeader).then(res => {
-            getSupplier()
-        })
+      deleteSuplier(value.id)
         setcurrentClient(undefined)
-        openDeleteModal()
+       forDeleteModal()
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
-    }
 
     function deleteClientRoad(value) {
-        openDeleteModal()
+forDeleteModal()
         setcurrentClient(value)
     }
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+       forShowModal()
     }
 
 
 
 
     return (
-        <div>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+        <div className={"container"}>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={forShowModal}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    forShowModal()
                 }}>
                     Taminotchi Qo'shish
                 </ModalHeader>
                 <ModalBody>
                     <AvForm onValidSubmit={saveClient}>
-                        {/* With AvField */}
-                        {/*<AvField type="checkbox" name="active" label="Active" value="false"/>*/}
-                        {/* With AvGroup AvInput and AvFeedback to build your own */}
-                        {/*<AvField type="select" name="select" label="Option"*/}
-                        {/*         helpMessage="Idk, this is an example. Deal with it!">*/}
-                        {/*    <option>1</option>*/}
-                        {/*    <option>2</option>*/}
-                        {/*    <option>3</option>*/}
-                        {/*    <option>4</option>*/}
-                        {/*    <option>5</option>*/}
-                        {/*</AvField>*/}
+
                         <AvField name="name" label="Nomi" required  value={currentClient ? currentClient.name : ""}/>
                         <AvField name="phone" label="Telefon Raqami" required value={currentClient ? currentClient.phone : ""}/>
                         <Button color="success">Save</Button>
@@ -95,13 +62,13 @@ const Supplier = () => {
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
                     <Button onClick={() => deleteClient(currentClient)} >xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => forDeleteModal()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -124,7 +91,7 @@ const Supplier = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {supplier.map((value, index) => {
+                {suplier.map((value, index) => {
                     return <tr style={{cursor: 'pointer'}}>
                         <td>{index + 1}</td>
                         <td>{value.name}</td>
@@ -141,4 +108,10 @@ const Supplier = () => {
     );
 };
 
-export default Supplier;
+const mapStateToProps=(state)=>({
+    suplier:state.suplier.suplier,
+    showModal:state.suplier.showModal,
+    deleteModal:state.suplier.deleteModal
+})
+const mapDispatchToProps={getSuplier,addSuplier,editSuplier,deleteSuplier,forShowModal,forDeleteModal}
+export default connect(mapStateToProps,mapDispatchToProps)(Supplier);

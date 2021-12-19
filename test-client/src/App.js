@@ -14,7 +14,7 @@ import Supplier from "./pages/Supplier";
 import Material from "./pages/Material";
 import InputMaterial from "./pages/InputMaterial";
 import WareHouseMaterial from "./pages/WareHouseMaterial";
-import OutputMaterial from "./pages/outputMaterial";
+import OutputMaterial from "./pages/OutputMaterial";
 import ToProductPage from "./page to section/ToProductPage";
 import InputProduct from "./pages/InputProduct";
 import ProductWareHouse from "./pages/ProductWareHouse";
@@ -29,7 +29,7 @@ const App = () => {
     return (
         <div>
             <Routes>
-                <Route exact path='/*' element={<LoginPage/>}/>
+                <Route exact={true} path='/' element={<LoginPage/>}/>
                 <Route  path='/catalog' element={<Catalog/>}/>
                 <Route  path='/productType' element={<ProductType/>}/>
                 <Route  path='/measurement' element={<Measurement/>}/>

@@ -1,82 +1,61 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
-import {API_PATH, tokenHeader} from "../component/Constants";
-import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {addMaterial, deleteMaterial, editMaterial, forDeleteModal, getMaterial, modalToggle} from "../store/material";
+import {getMeasurements} from "../store/measurement";
 
-const Material = () => {
-    const [material, setMaterial] = useState([])
-    const [measurement, setMeasurement] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
+const Material = ({materials, showModal, deleteModal, measurement, getMaterial, forDeleteModal,
+                      editMaterial, deleteMaterial,addMaterial, getMeasurements, modalToggle
+                  }) => {
     const [currentClient, setcurrentClient] = useState(undefined)
 
-   const getMeasurement=()=>{
-        axios.get(API_PATH+"measurement/list",tokenHeader).then(res=>{
-            setMeasurement(res.data)
-        })
-   }
-    const getMaterial = () => {
-        axios.get(API_PATH + 'material/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setMaterial(res.data)
-        })
-    }
+
     useEffect(() => {
         getMaterial()
-        getMeasurement()
+        getMeasurements()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
+
     const saveClient = (event, values) => {
         if (!currentClient) {
-            axios.post(API_PATH + "material/add", values, tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getMaterial()
-
-            })
+            addMaterial(values)
         } else {
-            axios.put(API_PATH + "material/edit/" + currentClient.id, values, tokenHeader).then(res => {
-                getMaterial()
-            })
+            editMaterial(currentClient.id, values)
             setcurrentClient(undefined)
         }
-        openModal()
+        modalToggle()
     }
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "material/" + value.id, tokenHeader).then(res => {
-            getMaterial()
-        })
+        deleteMaterial(value.id)
         setcurrentClient(undefined)
-        openDeleteModal()
+        forDeleteModal()
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
+    function deleteIgnore() {
+        forDeleteModal()
+        setcurrentClient(undefined)
     }
 
     function deleteClientRoad(value) {
-        openDeleteModal()
+        forDeleteModal()
         setcurrentClient(value)
     }
 
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+        modalToggle()
     }
 
 
     return (
-        <div>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+        <div className={'container'}>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={modalToggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    modalToggle()
                 }}>
                     Xomashyo Qo'shish
                 </ModalHeader>
@@ -97,20 +76,20 @@ const Material = () => {
                             {measurement.map(((value, index) => {
                                 return <option value={value.id}>{value.nameUz}</option>
                             }))}
-                             </AvField>
+                        </AvField>
                         <Button color="success">Save</Button>
                     </AvForm>
                 </ModalBody>
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
                     <Button onClick={() => deleteClient(currentClient)}>xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => deleteIgnore()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -145,7 +124,7 @@ const Material = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {material.map((value, index) => {
+                {materials.map((value, index) => {
                     return <tr style={{cursor: 'pointer'}}>
                         <td>{index + 1}</td>
                         <td>{value.code}</td>
@@ -165,5 +144,12 @@ const Material = () => {
         </div>
     );
 };
+const mapStateToProps = (state) => ({
+    materials: state.material.material,
+    measurement: state.measurement.measurement,
+    showModal: state.material.showModal,
+    deleteModal: state.material.deleteModal
 
-export default Material;
+})
+const mapDispatchToProps = {getMaterial, getMeasurements, modalToggle, forDeleteModal, addMaterial,deleteMaterial, editMaterial}
+export default connect(mapStateToProps, mapDispatchToProps)(Material);

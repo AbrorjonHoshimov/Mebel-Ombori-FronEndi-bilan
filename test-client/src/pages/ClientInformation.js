@@ -15,7 +15,7 @@ const ClientInformation = () => {
 
     useEffect(() => {
         getClient()
-    }, [])
+    },[])
 
 
     console.log(client)

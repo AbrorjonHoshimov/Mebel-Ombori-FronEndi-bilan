@@ -1,75 +1,64 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
 import {AvField, AvForm} from "availity-reactstrap-validation";
-import {API_PATH, tokenHeader} from "../component/Constants";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
-import {toast} from "react-toastify";
+import {connect} from "react-redux";
+import {
+    addProductType,
+    deleteProductType,
+    editProductType,
+    forDeleteModal,
+    getPrType,
+    toggle
+} from "../store/productType";
 
-const ProductType = () => {
-    const [prType, setPrType] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
-    const [currentClient, setcurrentClient] = useState(undefined)
+const ProductType = ({productType, getPrType, toggle, showModal,
+                         deleteModal, forDeleteModal, deleteProductType, addProductType,editProductType}) => {
 
-    const getPrType = () => {
-        axios.get(API_PATH + 'productType/list',tokenHeader).then(res => {
-            // console.log(res.data)
-            setPrType(res.data)
-        })
-    }
+    const [current, setcurrent] = useState(undefined)
+
     useEffect(() => {
         getPrType()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
-    const saveClient = (event,values) => {
-        if (!currentClient) {
-            axios.post(API_PATH + "productType/add", values,tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getPrType()
 
-            })
-        }else {
-            axios.put(API_PATH+"productType/edit/"+currentClient.id,values,tokenHeader).then(res=>{
-                getPrType()
-            })
-            setcurrentClient(undefined)
+
+    const saveClient = (event, values) => {
+        if (!current) {
+            addProductType(values)
+        } else {
+            editProductType(current.id,values)
+            setcurrent(undefined)
         }
-        openModal()
+        toggle()
     }
+
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "productType/" + value.id,tokenHeader).then(res => {
-            getPrType()
-        })
-        openDeleteModal()
+        deleteProductType(value.id)
+        setcurrent(undefined)
+        forDeleteModal()
+
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
-    }
 
     function deleteClientRoad(value) {
-        openDeleteModal()
-        setcurrentClient(value)
+        forDeleteModal()
+        setcurrent(value)
     }
+
     function editClientRoad(value) {
-        setcurrentClient(value)
-        openModal()
+        setcurrent(value)
+        toggle()
     }
-
-
 
 
     return (
-        <div>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+        <div className={"container"}>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={toggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    toggle()
                 }}>
                     Maxsulot Turini Qo'shish
                 </ModalHeader>
@@ -86,21 +75,23 @@ const ProductType = () => {
                         {/*    <option>4</option>*/}
                         {/*    <option>5</option>*/}
                         {/*</AvField>*/}
-                        <AvField name="nameUz" label="NameUz" required  value={currentClient ? currentClient.nameUz : ""}/>
-                        <AvField name="nameRu" label="NameRu" required value={currentClient ? currentClient.nameRu : ""}/>
+                        <AvField name="nameUz" label="NameUz" required
+                                 value={current ? current.nameUz : ""}/>
+                        <AvField name="nameRu" label="NameRu" required
+                                 value={current ? current.nameRu : ""}/>
                         <Button color="success">Save</Button>
                     </AvForm>
                 </ModalBody>
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
-                    <Button onClick={() => deleteClient(currentClient)} >xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => deleteClient(current)}>xa</Button>
+                    <Button onClick={() => forDeleteModal()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -123,13 +114,13 @@ const ProductType = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {prType.map((value, index) => {
+                {productType.map((value, index) => {
                     return <tr style={{cursor: 'pointer'}}>
                         <td>{index + 1}</td>
                         <td>{value.nameUz}</td>
                         <td>{value.nameRu}</td>
                         <td>
-                            <button className={"btn btn-warning"} onClick={()=>editClientRoad(value)}>edit</button>
+                            <button className={"btn btn-warning"} onClick={() => editClientRoad(value)}>edit</button>
                             <button className={"btn btn-danger"} onClick={() => deleteClientRoad(value)}>delete</button>
                         </td>
                     </tr>
@@ -139,5 +130,10 @@ const ProductType = () => {
         </div>
     );
 };
-
-export default ProductType;
+const mapStateToProps = (state) => ({
+    productType: state.productType.productType,
+    showModal: state.productType.showModal,
+    deleteModal: state.productType.forDeleModal
+})
+const mapDispatchToProps = {getPrType, toggle, forDeleteModal, deleteProductType, addProductType,editProductType}
+export default connect(mapStateToProps, mapDispatchToProps)(ProductType);

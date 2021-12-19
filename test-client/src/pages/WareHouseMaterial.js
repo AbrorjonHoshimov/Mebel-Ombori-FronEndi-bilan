@@ -19,7 +19,7 @@ const WareHouseMaterial = () => {
 
     return (
         <div className={"container"}>
-            <p className={'text-center fw-bold'}>Ombordagi Tayyor Maxsulotlar</p>
+            <p className={'text-center fw-bold'}>Ombordagi Xomashyolar</p>
             <Table
             >
                 <thead>

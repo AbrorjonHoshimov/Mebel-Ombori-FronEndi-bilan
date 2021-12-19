@@ -4,89 +4,66 @@ import {API_PATH, tokenHeader} from "../component/Constants";
 import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {
+    addInputProduct,
+    deleteInputProduct,
+    editInputProduct,
+    forDeleteModal,
+    getInputProduct,
+    modalToggle
+} from "../store/inputProduct";
+import {getProduct} from "../store/product";
+import {getPrType} from "../store/productType";
 
-const InputProduct = () => {
+const InputProduct = ({inputProduct,product,productType,showModal,deleteModal,getPrType,getProduct,getInputProduct,modalToggle,forDeleteModal,deleteInputProduct,editInputProduct,addInputProduct}) => {
 
-    const [prType, setPrType] = useState([])
-    const [product, setProduct] = useState([])
-    const [inputProduct, setInputProduct] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
     const [currentClient, setcurrentClient] = useState(undefined)
 
-    const getProduct = () => {
-        axios.get(API_PATH + 'product/list',tokenHeader).then(res => {
-            // console.log(res.data)
-            setProduct(res.data)
-        })
-    }
-    const getPrType = () => {
-        axios.get(API_PATH + 'productType/list',tokenHeader).then(res => {
-            // console.log(res.data)
-            setPrType(res.data)
-        })
-    }
-    const getInputProduct = () => {
-        axios.get(API_PATH + 'inputProduct/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setInputProduct(res.data)
 
-        })
-    }
     useEffect(() => {
         getInputProduct()
         getProduct()
         getPrType()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
+
     const saveClient = (event, values) => {
         if (!currentClient) {
-            axios.post(API_PATH + "inputProduct/add", values, tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getInputProduct()
-            })
+            addInputProduct(values)
         } else {
-            axios.put(API_PATH + "inputProduct/" + currentClient.id, values, tokenHeader).then(res => {
-                getInputProduct()
-            })
+            editInputProduct(currentClient.id,values)
             setcurrentClient(undefined)
         }
-        openModal()
+        modalToggle()
     }
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "inputProduct/" + value.id, tokenHeader).then(res => {
-            getInputProduct()
-        })
+      deleteModal(value.id)
         setcurrentClient(undefined)
-        openDeleteModal()
+        forDeleteModal()
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
-    }
+
 
     function deleteClientRoad(value) {
-        openDeleteModal()
+        forDeleteModal()
         setcurrentClient(value)
     }
 
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+        modalToggle()
     }
 
 
     return (
         <div className={"container"}>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={modalToggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    modalToggle()
                 }}>
                    Omborga Tayyor Maxsulot Kirimi
                 </ModalHeader>
@@ -99,7 +76,7 @@ const InputProduct = () => {
                         <AvField type="select" name="productTypeId" label="Option"
                                  helpMessage="Idk, this is an example. Deal with it!">
                             <option value="">Maxsulot turini tanlang</option>
-                            {prType.map(((value, index) => {
+                            {productType.map(((value, index) => {
                                 return <option value={value.id}>{value.nameUz}</option>
                             }))}
                         </AvField>
@@ -119,13 +96,13 @@ const InputProduct = () => {
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
                     <Button onClick={() => deleteClient(currentClient)}>xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => forDeleteModal()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -182,5 +159,13 @@ const InputProduct = () => {
         </div>
     );
 };
+const mapStateToProps=(state)=>({
+    inputProduct:state.inputProduct.inputProduct,
+    showModal:state.inputProduct.showModal,
+    deleteModal:state.inputProduct.deleteModal,
+    product:state.product.product,
+    productType:state.productType.productType,
 
-export default InputProduct;
+})
+const mapDispatchToProps ={getInputProduct,getProduct,getPrType,modalToggle,forDeleteModal,addInputProduct,editInputProduct,deleteInputProduct}
+export default connect(mapStateToProps,mapDispatchToProps)(InputProduct);

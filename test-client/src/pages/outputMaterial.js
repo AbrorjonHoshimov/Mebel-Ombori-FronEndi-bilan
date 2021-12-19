@@ -4,80 +4,64 @@ import {API_PATH, tokenHeader} from "../component/Constants";
 import {toast} from "react-toastify";
 import {Button, Modal, ModalBody, ModalHeader, Table} from "reactstrap";
 import {AvField, AvForm} from "availity-reactstrap-validation";
+import {connect} from "react-redux";
+import {
+    addOutputMaterial,
+    deleteOutputMaterial,
+    editOutputMaterial, forDeleteModal,
+    getOutputMaterial,
+    modalToggle
+} from "../store/outputMaterial";
+import {getMaterial} from "../store/material";
 
-const OutputMaterial = () => {
-    const [material, setMaterial] = useState([])
-    const [outputMaterial, setOutputMaterial] = useState([])
-    const [disable, setDisable] = useState(false)
-    const [deleteModal, setdeleteModal] = useState(false)
+const OutputMaterial = ({outMat,showModal,deleteModal,addOutputMaterial,material,modalToggle,deleteOutputMaterial,forDeleteModal,editOutputMaterial,getOutputMaterial,getMaterial}) => {
     const [currentClient, setcurrentClient] = useState(undefined)
 
 
-    const getMaterial = () => {
-        axios.get(API_PATH + 'material/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setMaterial(res.data)
-        })
-    }
-    const getOutputMaterial = () => {
-        axios.get(API_PATH + 'otputMaterial/list', tokenHeader).then(res => {
-            // console.log(res.data)
-            setOutputMaterial(res.data)
-        })
-    }
+
+
     useEffect(() => {
         getMaterial()
         getOutputMaterial()
     }, [])
 
-    const openModal = () => {
-        setDisable(!disable)
-    }
+
     const saveClient = (event, values) => {
         if (!currentClient) {
-            axios.post(API_PATH + "otputMaterial/add", values, tokenHeader).then(res => {
-                toast.success(res.data.message)
-                getOutputMaterial()
-            })
+           addOutputMaterial(values)
         } else {
-            axios.put(API_PATH + "otputMaterial/" + currentClient.id, values, tokenHeader).then(res => {
-                getOutputMaterial()
-            })
+           editOutputMaterial(currentClient.id,values)
             setcurrentClient(undefined)
         }
-        openModal()
+        modalToggle()
     }
 
     function deleteClient(value) {
-        axios.delete(API_PATH + "otputMaterial/" + value.id, tokenHeader).then(res => {
-            getOutputMaterial()
-        })
+       deleteOutputMaterial(value.id)
         setcurrentClient(undefined)
-        openDeleteModal()
+        forDeleteModal()
     }
 
-    function openDeleteModal() {
-        setdeleteModal(!deleteModal)
-    }
+
 
     function deleteClientRoad(value) {
-        openDeleteModal()
+        forDeleteModal()
         setcurrentClient(value)
     }
 
     function editClientRoad(value) {
         setcurrentClient(value)
-        openModal()
+        modalToggle()
     }
 
 
     return (
         <div className={"container"}>
-            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={openModal}>Qo'shish</button>
+            <button className={'btn btn-success '} style={{margin: '20px 0'}} onClick={modalToggle}>Qo'shish</button>
 
-            <Modal isOpen={disable}>
+            <Modal isOpen={showModal}>
                 <ModalHeader toggle={() => {
-                    openModal()
+                    modalToggle()
                 }}>
                    Ombordagi Xomashyodan Chiqim Qilish
                 </ModalHeader>
@@ -102,13 +86,13 @@ const OutputMaterial = () => {
             </Modal>
             <Modal isOpen={deleteModal}>
                 <ModalHeader toggle={() => {
-                    openDeleteModal()
+                    forDeleteModal()
                 }}>
                     O'chirishni tasdiqlaysizmi?
                 </ModalHeader>
                 <ModalBody>
                     <Button onClick={() => deleteClient(currentClient)}>xa</Button>
-                    <Button onClick={() => openDeleteModal()}>Yo'q</Button>
+                    <Button onClick={() => forDeleteModal()}>Yo'q</Button>
                 </ModalBody>
             </Modal>
             <Table
@@ -141,7 +125,7 @@ const OutputMaterial = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {outputMaterial.map((value, index) => {
+                {outMat.map((value, index) => {
                     return <tr style={{cursor: 'pointer'}}>
                         <td>{index + 1}</td>
                         <td>{value.material.code+' '+value.material.nameUZ}</td>
@@ -161,4 +145,12 @@ const OutputMaterial = () => {
     );
 };
 
-export default OutputMaterial;
+const mapStateToProps=(state)=>({
+    outMat:state.outputMaterial.outputMaterial,
+    showModal:state.outputMaterial.showModal,
+    deleteModal:state.outputMaterial.deleteModal,
+    material:state.material.material
+
+})
+const mapDispatchToProps={getOutputMaterial,getMaterial,addOutputMaterial,editOutputMaterial,deleteOutputMaterial,modalToggle,forDeleteModal}
+export default connect(mapStateToProps,mapDispatchToProps)(OutputMaterial);
